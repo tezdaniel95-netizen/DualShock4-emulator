@@ -9,9 +9,9 @@ Simple application to emulate the Sony DualShock 4 gamepad using an Xbox control
 ## Setup
 1. Install [ViGEmBus](https://github.com/ViGEm/ViGEmBus/releases).
 2. Install [Microsoft Visual C++ Redistributable 2017](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist) or newer.
-3. Unpack and launch "DualShock4 emulator" (**Attention!** It is important to run DS4 emulator before starting PS Plus, if you are using an Xbox controller, so that PS Plus gives priority to the DualShock controller).
-4. Launch "PlayStation Plus", "PS Remote Play", "xCloud", or another application. Read the FAQ to set up xCloud.
-5. If necessary, you can invert the axis, change the `InvertX` and `InvertY` parameters to `1` in the "Config.ini" configuration file.
+3. Unpack and launch `DualShock 4 emulator` (**Attention!** It is important to run DS4 emulator before starting `PS Plus`, if you are using an Xbox controller, so that `PS Plus` gives priority to the DualShock 4 controller).
+4. Launch `PlayStation Plus`, `PS Remote Play`, `xCloud`, or another application. Read the FAQ to set up `xCloud`.
+5. If necessary, you can invert the axis, change the `InvertX` and `InvertY` parameters to `1` in the `Config.ini` configuration file.
 6. You can also check how the DualShock 4 controller emulation works in the [VSCView](https://github.com/Nielk1/VSCView/releases/) program. 
 7. Study the configuration `Config.ini` and the description below, perhaps something can be configured more conveniently.
 
@@ -63,7 +63,60 @@ The movement activation button, by default `Back`, can be reassigned to other bu
 
 Changing the dead zone of sticks for drifting sticks is supported. Press `ALT + F9` to get the values, paste them into the "Config.ini" configuration file, into the `DeadZone` parameters and restart the program.
 
-## Touchpad
+## Keys for emulating touchpad, motion, etc.
+
+DualShock 4 | Keyboard and mouse
+------------ | -------------
+Touchpad swipe up, down, left, right | `Home, End, Delete, Page down`
+Touchpad first touch: up, down, left, right, down | `U, J, H, K`
+Touchpad second touch: up, down, left, right, down | `↑, ↓, ←, →`
+Shake the gamepad | `T`
+Rotate gamepad forward, backward, right, left (motion, gyroscope) | `Numpad 8, 2, 4, 6, 7, 9`
+PS | `F2`
+
+In the `Default.ini` profile configuration file, in the `Profiles` folder, you can change the button bindings.
+
+## Keyboard and mouse
+By default, the mouse and keyboard only work in the windows `PlayStation Plus` and `PS4 Remote Play` (change the `ActivateOnlyInWindow2` parameter to your regional application title). To work only in any other applications or emulators, change the parameters `ActivateOnlyInWindow` and `ActivateOnlyInWindow2` to the headers of these applications You can enable the work in all windows (change the `ActivateInAnyWindow` parameter to `1`, in the "Config.ini" configuration file) or change the name of the window (the `ActivateOnlyInWindow` parameter) in which the actions are captured. This is necessary so that the cursor is centered only in one window and no buttons are pressed when the window is minimized.
+
+To disable cursor centering, hold down the `C` button (can change it in the config - `StopСenteringKey`).
+
+To hide the cursor after startup, change `HideCursorAfterStart` to `1`, to restore the cursor, close the program by pressing `ALT + ESCAPE` or `~`.
+
+For full-screen Playstation Plus use the keys `ALT + F10`, the upper black bar, as well as the taskbar will be hidden. To return to the normal window, press these keys again. You can disable hiding the taskbar in the configuration file by changing the `HideTaskBarInFullScreen` parameter to `0`. If the Playstation Plus window changes once, you can change the default top offset, the `FullScreenTopOffset` parameter. 
+
+DualShock 4 | Keyboard and mouse
+------------ | -------------
+L1 | `Alt`
+R1 | `Control`
+L2 | `Right mouse button`
+R2 | `Left mouse button`
+SHARE | `F12`
+TOUCHPAD (pressing) | `Enter`
+OPTIONS | `Tab`
+DPAD UP | `1`
+DPAD LEFT | `2`
+DPAD RIGHT | `3`
+DPAD DOWN | `4`
+TRIANGLE | `E`
+SQUARE | `R`
+CIRCLE | `Q`
+CROSS | `Space`
+L3 (pressing the stick) | `Shift`
+R3 (pressing the stick) | `Middle mouse button`
+
+
+In the profile configuration file, in the `Profiles` folder, you can change the button bindings or create a new one based on `Default.ini`. Button names can be found [here](https://github.com/r57zone/DualShock4-emulator/blob/master/BINDINGS.md). You can choose from standard profiles. Send more convenient bindings for a variety of games.
+
+
+
+The sensitivity parameters `SensX`, `SensY` for the mouse can also be found in the configuration file `Config.ini`, in the section `Mouse`. If there is no stick movement, you can try increasing the "SleepTimeOut" parameter to 2, 4, 8, 10.
+
+
+
+You can also enable emulation of analog triggers (L2, R2), change the `EmulateAnalogTriggers` parameter to `1`, and increase step `AnalogTriggerStep` (from 0.1 to 255).
+
+## Touchpad in games
 Game | Action
 ------------ | -------------
 Uncharted 3: Drake’s Deception (2011) | The `Share` button (F12) duplicates pressing the left side of the touchpad.
@@ -71,9 +124,6 @@ The Last Of Us Part II (2020) | Options -> Accessibility -> "Strumming Settings"
 
 On the Xbox gamepad, you need to press the `Back/View/Select` button (touchpad) and move the stick to the sides for swipes. By default, pressing the touchpad during swipes is disabled, it can be enabled in the configuration file by changing the `TouchPadPressedWhenSwiping` parameter to `1`.
 
-
-
-You can use swipes for the keyboard, the button codes are described below. 
 
 ## Motion with Android phone (Gyroscope)
 1. Enable the `Activate` parameter in the `Config.ini` configuration file, changing `0` to `1`, in the `Motion` section.
@@ -85,50 +135,6 @@ You can use swipes for the keyboard, the button codes are described below.
 7. Change phone orientation (the parameter `Orientation`, in the `Motion` section. where `1` is landscape and `0` is portrait).
 
 If you just need to shake (gyro) the gamepad in the game, then there is no need to install Android applications, just press the "shake" button of the gamepad.
-
-## Keyboard and mouse
-By default, the mouse and keyboard only work in the windows "PlayStation Plus" and "PS4 Remote Play" (change the `ActivateOnlyInWindow2` parameter to your regional application title). To work only in any other applications or emulators, change the parameters `ActivateOnlyInWindow` and `ActivateOnlyInWindow2` to the headers of these applications You can enable the work in all windows (change the `ActivateInAnyWindow` parameter to `1`, in the "Config.ini" configuration file) or change the name of the window (the `ActivateOnlyInWindow` parameter) in which the actions are captured. This is necessary so that the cursor is centered only in one window and no buttons are pressed when the window is minimized.
-
-To disable cursor centering, hold down the "C" button (can change it in the config - `StopСenteringKey`).
-
-To hide the cursor after startup, change `HideCursorAfterStart` to `1`, to restore the cursor, close the program by pressing "ALT" + "ESCAPE" or "~".
-
-For full-screen Playstation Plus use the keys "ALT" + "F10", the upper black bar, as well as the taskbar will be hidden. To return to the normal window, press these keys again. You can disable hiding the taskbar in the configuration file by changing the `HideTaskBarInFullScreen` parameter to `0`. If the Playstation Plus window changes once, you can change the default top offset, the `FullScreenTopOffset` parameter. 
-
-DualShock 4 | Keyboard and mouse
------------- | -------------
-L1 | Alt
-R1 | Control
-L2 | Right mouse button
-R2 | Left mouse button
-SHARE | F12
-TOUCHPAD (pressing) | Enter
-OPTIONS | Tab
-DPAD UP | 1
-DPAD LEFT | 2
-DPAD RIGHT | 3
-DPAD DOWN | 4
-TRIANGLE | E
-SQUARE | R
-CIRCLE | Q
-CROSS | Space
-L3 (pressing the stick) | Shift
-R3 (pressing the stick) | Middle mouse button
-Touchpad swipe up, down, left, right | 7, 8, 9, 0
-Touchpad up, center, left, right, down  | U, J, H, K, N
-Shake the gamepad | T
-Rotate gamepad forward, backward, right, left (gyroscope) | Numpad 8, 2, 4, 6
-PS | F2
-
-In the profile configuration file, in the "Profiles" folder, you can change the button bindings or create a new one based on `Default.ini`. Button names can be found [here](https://github.com/r57zone/DualShock4-emulator/blob/master/BINDINGS.md). You can choose from standard profiles. Send more convenient bindings for a variety of games.
-
-
-
-The sensitivity parameters `SensX`, `SensY` for the mouse can also be found in the configuration file "Config.ini", in the section "Mouse". If there is no stick movement, you can try increasing the "SleepTimeOut" parameter to 2, 4, 8, 10.
-
-
-
-You can also enable emulation of analog triggers (L2, R2), change the `EmulateAnalogTriggers` parameter to `1`, and increase step `AnalogTriggerStep` (from 0.1 to 255).
 
 ## Feedback
 `r57zone[at]gmail.com`

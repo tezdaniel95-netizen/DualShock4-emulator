@@ -8,8 +8,8 @@ Cette application qui permet d'émuler la manette DualShock 4 de chez Sony en ut
 ## Installation
 1. Installer [ViGEmBus](https://github.com/ViGEm/ViGEmBus/releases).
 2. Installer [Microsoft Visual C++ Redistributable 2017](https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist) ou plus récent.
-3. Dézipper et lancer "DS4Emulator.exe" (**Attention!** Il est important de lancer l'exe avant Playstation Plus si vous utilisez la manette XBox, pour que PS Plus donne la priorité à la manette (virtuelle) DS4).
-4. Lancez "PlayStation Plus", "PS Remote Play", "xCloud" ou une autre application. Lisez la FAQ pour configurer xCloud.
+3. Dézipper et lancer `DS4Emulator.exe` (**Attention!** Il est important de lancer l'exe avant Playstation Plus si vous utilisez la manette XBox, pour que `PS Plus` donne la priorité à la manette (virtuelle) DS4).
+4. Lancez `PlayStation Plus`, `PS Remote Play`, `xCloud` ou une autre application. Lisez la FAQ pour configurer `xCloud`.
 5. Si besoin, vous pouvez inverser les axes : changez les paramètres `InvertX` et `InvertY` en `1` dans le fichier de configuration `Config.ini`.
 6. Vous pouvez également vérifier le fonctionnement de l'émulation du contrôleur DualShock 4 dans le programme [VSCView](https://github.com/Nielk1/VSCView/releases/).
 7. Étudiez la configuration `Config.ini` et la description ci-dessous, peut-être que quelque chose peut être configuré plus facilement.
@@ -62,28 +62,18 @@ Le bouton d'activation du mouvement, par défaut `Retour`, peut être réaffect�
 
 Changer la zone morte des joysticks pour drifter est supporté. Appuyez sur `ALT` + `F9` lorque l'application est au premier-plan, puis copiez/collez les valeurs dans le fichier `Config.ini` dans les paramètres `DeadZone` et redémarrez l'application.
 
-## Touchpad
-Jeux | Action
+## Touches pour émuler le pavé tactile, le mouvement, etc.
+
+DualShock 4 | Souris/clavier
 ------------ | -------------
-Uncharted 3: Drake’s Deception (2011) | Le bouton `Share` (ou `F12`) duplique l'appui gauche sur le touchpad.
-The Last Of Us Part II (2020) | Options -> Accessibilité -> "Paramètres de gratte (guitar)" au lieu de vertical et horizontal, mettez boutons.
+Balayage du pavé tactile vers le haut, le bas, la gauche, la droite | `Home, End, Delete, Page down`
+Premier appui sur le pavé tactile : haut, bas, gauche, droite, bas | `U, J, H, K`
+Deuxième appui sur le pavé tactile : haut, bas, gauche, droite, bas | `↑, ↓, ←, →`
+Secouer la manette | `T`
+Rotation de la manette vers l'avant, l'arrière, la droite, la gauche (mouvement, gyroscope) | `Numpad 8, 2, 4, 6, 7, 9`
+PS | `F2`
 
-Sur la manette Xbox, vous devez appuyer sur le bouton `Retour/Vue/Select` (touchpad) et bouger le joystick dans le sens voulu pour simuler un toucher directionnel (ou glissé) sur le touchpad. Par défaut, l'appui sur le touchpad pendant le glissé est désactivé, vous pouvez l'activer dans le fichier de configuration en mettant `1` au paramètres `TouchPadPressedWhenSwiping`.
-
-
-
-Vous pouvez aussi simuler le glissé via le clavier, les codes correspondant aux boutons sont décrits en dessous. 
-
-## Mouvement avec un téléphone Android (Gyroscope)
-1. Activez le paramètre `Activate` dans le fichier de configuration `Config.ini`, en changeant `0` en `1`, dans la section `Motion`.
-2. Vérifiez le pare-feu Windows afin d'autoriser les connexions entrantes sur votre type de réseau (privé).
-3. Installer FreePieIMU sur votre téléphone Android en prenant la dernière version ici [OpenTrack archive](https://github.com/opentrack/opentrack) ou ici [releases](https://github.com/r57zone/DualShock4-emulator/releases). 
-4. Réduisez la sensibilité générale si nécessaire (le paramètre `Sens`, dans la section `Motion`, où `100` est une sensibilité de 100%) dans le fichier de configuration.
-5. Réduisez la sensibilité du capteur individuel si nécessaire (les `AccelSens` et `GyroSense`, dans la section `Motion`, où `100` correspond à une sensibilité de 100 %) dans le fichier de configuration.
-6. Inversez les axes si nécessaire (les paramètres `InverseX`, `InverseY` et `InverseZ`, dans la section `Motion`, où `1` active l'inversion et `0` désactive).
-7. Modifiez l'orientation du téléphone (le paramètre `Orientation`, dans la section `Motion`, où `1` correspond au paysage et `0` au portrait).
-
-Si vous avez just besoin de simuler une secousse de la manette (gyro) dans le jeu, dans ce cas il n'y a pas besoin d'installer l'application Android, appuyez sur le bouton `Shake` de la manette.
+Dans le fichier de configuration du profil `Default.ini`, dans le dossier `Profiles`, vous pouvez modifier les raccourcis clavier.
 
 ## Clavier et souris
 Par défaut, le clavier/souris fonctionnent uniquement dans les fenêtres `PlayStation Plus` et `PS4 Remote Play` (changez le paramètre `ActivateOnlyInWindow2` si le nom de votre fenêtre est différent, pour les français, cela ne devrait pas). Pour fonctionner uniquement dans d'autres applications ou émulateurs, changez les paramètres `ActivateOnlyInWindow` et `ActivateOnlyInWindow2` pour qu'ils matchent le nom de vos applications (titre de la fenêtre principale). Vous pouvez aussi activer cette application pour qu'elle fenêtre dans toutes les fenêtres : changez le paramètre `ActivateAnyWindow` en `1` dans le fichier de configuration ou changez le paramètre `ActivateOnlyWindow` pour que la valeur soit le nom de la fenêtre voulue. Cela est nécessaire pour que le curseur soit centré uniquement dans une seule fenêtre et qu'aucun bouton ne soit appuyé si cette fenêtre est minimisée.
@@ -97,30 +87,25 @@ Pour le plein-écran, Playstation Plus utilise la combinaison de touches `ALT` +
 
 DualShock 4 | Souris/clavier
 ------------ | -------------
-L1 | Alt
-R1 | Control
-L2 | Clic droit
-R2 | Clic gauche
-SHARE | F12
-TOUCHPAD (appui) | Entrée
-OPTIONS | Tab
-HAUT | 1
-GAUCHE | 2
-DROITE | 3
-BAS | 4
-TRIANGLE | E
-CARRÉ  | R
-ROND | Q
-CROIX | Espace
-L3 (appui sur le joystick) | Shift
-R3 (appui sur le joystick) | Bouton du milieu souris
-Touchpad (glissé) ver le haut, bas, gauche, droite | 7, 8, 9, 0
-Touchpad (clic) haut, centre, gauche, droite, bas  | U, J, H, K, N
-Secouer la manette | T
-Faites pivoter la manette de jeu vers l'avant, l'arrière, la droite, la gauche (gyroscope) | Pavé numérique 8, 2, 4, 6
-PS | F2
+L1 | `Alt`
+R1 | `Control`
+L2 | `Clic droit`
+R2 | `Clic gauche`
+SHARE | `F12`
+TOUCHPAD (appui) | `Entrée`
+OPTIONS | `Tab`
+HAUT | `1`
+GAUCHE | `2`
+DROITE | `3`
+BAS | `4`
+TRIANGLE | `E`
+CARRÉ | `R`
+ROND | `Q`
+CROIX | `Espace`
+L3 (appui sur le joystick) | `Shift`
+R3 (appui sur le joystick) | `Bouton du milieu souris`
 
-Dans le fichier de configuration du profil, dans le dossier "Profiles", vous pouvez modifier les liaisons des boutons ou en créer un nouveau basé sur `Default.ini`. Les titres correspondants peuvent être trouvés [ici](https://github.com/r57zone/DualShock4-emulator/blob/master/BINDINGS.md). Vous pouvez choisir parmi des profils standards. Envoyez des fixations plus pratiques pour une variété de jeux.
+Dans le fichier de configuration du profil, dans le dossier `Profiles`, vous pouvez modifier les liaisons des boutons ou en créer un nouveau basé sur `Default.ini`. Les titres correspondants peuvent être trouvés [ici](https://github.com/r57zone/DualShock4-emulator/blob/master/BINDINGS.md). Vous pouvez choisir parmi des profils standards. Envoyez des fixations plus pratiques pour une variété de jeux.
 
 
 
@@ -128,6 +113,27 @@ Le paramètre de sensibilité `SensX`, `SensY` pour la souris mouse peut aussi �
 S'il n'y a pas de mouvement de joystick apparent, vous pouvez augmenter le paramètre `SleepTimeOut` en 2, 4, 8, 10.
 
 Vous pouvez aussi activer l'émulation des boutons analogiques (L2, R2) : changez le paramètre `EmulateAnalogTriggers` en `1` and augmentez le `AnalogTriggerStep` (de 0.1 à 255).
+
+## Pavé tactile dans les jeux
+Jeux | Action
+------------ | -------------
+Uncharted 3: Drake’s Deception (2011) | Le bouton `Share` (ou `F12`) duplique l'appui gauche sur le touchpad.
+The Last Of Us Part II (2020) | Options -> Accessibilité -> "Paramètres de gratte (guitar)" au lieu de vertical et horizontal, mettez boutons.
+
+Sur la manette Xbox, vous devez appuyer sur le bouton `Retour/Vue/Select` (touchpad) et bouger le joystick dans le sens voulu pour simuler un toucher directionnel (ou glissé) sur le touchpad. Par défaut, l'appui sur le touchpad pendant le glissé est désactivé, vous pouvez l'activer dans le fichier de configuration en mettant `1` au paramètres `TouchPadPressedWhenSwiping`.
+
+
+## Mouvement avec un téléphone Android (Gyroscope)
+1. Activez le paramètre `Activate` dans le fichier de configuration `Config.ini`, en changeant `0` en `1`, dans la section `Motion`.
+2. Vérifiez le pare-feu Windows afin d'autoriser les connexions entrantes sur votre type de réseau (privé).
+3. Installer FreePieIMU sur votre téléphone Android en prenant la dernière version ici [OpenTrack archive](https://github.com/opentrack/opentrack) ou ici [releases](https://github.com/r57zone/DualShock4-emulator/releases). 
+4. Réduisez la sensibilité générale si nécessaire (le paramètre `Sens`, dans la section `Motion`, où `100` est une sensibilité de 100%) dans le fichier de configuration.
+5. Réduisez la sensibilité du capteur individuel si nécessaire (les `AccelSens` et `GyroSense`, dans la section `Motion`, où `100` correspond à une sensibilité de 100 %) dans le fichier de configuration.
+6. Inversez les axes si nécessaire (les paramètres `InverseX`, `InverseY` et `InverseZ`, dans la section `Motion`, où `1` active l'inversion et `0` désactive).
+7. Modifiez l'orientation du téléphone (le paramètre `Orientation`, dans la section `Motion`, où `1` correspond au paysage et `0` au portrait).
+
+Si vous avez just besoin de simuler une secousse de la manette (gyro) dans le jeu, dans ce cas il n'y a pas besoin d'installer l'application Android, appuyez sur le bouton `Shake` de la manette.
+
 
 ## Feedback
 `r57zone[at]gmail.com`

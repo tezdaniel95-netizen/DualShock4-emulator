@@ -20,8 +20,10 @@
 #define XUSER_MAX_COUNT                 4
 #define XUSER_INDEX_ANY					0x000000FF
 
-#define ERROR_DEVICE_NOT_CONNECTED		1167
-#define ERROR_SUCCESS					0
+//#define ERROR_DEVICE_NOT_CONNECTED		1167
+//#define ERROR_SUCCESS					0
+
+// Touchpad max - X = 1919, Y = 941
 
 // XInput structures
 typedef struct _XINPUT_GAMEPAD
@@ -74,6 +76,8 @@ typedef struct _XINPUT_KEYSTROKE
 typedef DWORD(__stdcall *_XInputGetState)(_In_ DWORD dwUserIndex, _Out_ XINPUT_STATE *pState);
 typedef DWORD(__stdcall *_XInputSetState)(_In_ DWORD dwUserIndex, _In_ XINPUT_VIBRATION *pVibration);
 
+unsigned short Lang = 0x00;
+
 #define SkipPollTimeOut 15
 
 #define KBMode 0
@@ -81,16 +85,48 @@ typedef DWORD(__stdcall *_XInputSetState)(_In_ DWORD dwUserIndex, _In_ XINPUT_VI
 int EmulationMode = KBMode;
 
 bool SwapShareTouchPad = false;
+bool SwapTriggersShoulders = false;
+bool TouchPadPressedWhenSwiping = false;
+
 bool ActivateInAnyWindow = false;
 bool CursorHidden = false;
 
+bool SwapSticks = false;
+bool LeftAnalogStick = false;
+bool EmulateAnalogTriggers = false;
+
 std::string KEY_ID_STOP_CENTERING_NAME = "";
 std::string KEY_ID_XBOX_ACTIVATE_MULTI_NAME = "";
-std::string KEY_ID_XBOX_SHAKING_NAME = "";
-std::string KEY_ID_XBOX_MOTION_UP_NAME = "";
-std::string KEY_ID_XBOX_MOTION_DOWN_NAME = "";
-std::string KEY_ID_XBOX_MOTION_LEFT_NAME = "";
-std::string KEY_ID_XBOX_MOTION_RIGHT_NAME = "";
+std::string KEY_ID_XBOX_MOTION_SHAKING_NAME = "";
+std::string KEY_ID_XBOX_MOTION_X_ADD_NAME = "";
+std::string KEY_ID_XBOX_MOTION_X_SUB_NAME = "";
+std::string KEY_ID_XBOX_MOTION_Y_ADD_NAME = "";
+std::string KEY_ID_XBOX_MOTION_Y_SUB_NAME = "";
+std::string KEY_ID_XBOX_MOTION_Z_ADD_NAME = "";
+std::string KEY_ID_XBOX_MOTION_Z_SUB_NAME = "";
+
+std::string KEY_ID_MOTION_SHAKING_NAME = "";
+std::string KEY_ID_MOTION_X_ADD_NAME = "";
+std::string KEY_ID_MOTION_X_SUB_NAME = "";
+std::string KEY_ID_MOTION_Y_ADD_NAME = "";
+std::string KEY_ID_MOTION_Y_SUB_NAME = "";
+std::string KEY_ID_MOTION_Z_ADD_NAME = "";
+std::string KEY_ID_MOTION_Z_SUB_NAME = "";
+
+std::string KEY_ID_TOUCHPAD_SWIPE_UP_NAME = "";
+std::string KEY_ID_TOUCHPAD_SWIPE_DOWN_NAME = "";
+std::string KEY_ID_TOUCHPAD_SWIPE_LEFT_NAME = "";
+std::string KEY_ID_TOUCHPAD_SWIPE_RIGHT_NAME = "";
+
+std::string KEY_ID_TOUCHPAD_FIRST_UP_NAME = "";
+std::string KEY_ID_TOUCHPAD_FIRST_DOWN_NAME = "";
+std::string KEY_ID_TOUCHPAD_FIRST_LEFT_NAME = "";
+std::string KEY_ID_TOUCHPAD_FIRST_RIGHT_NAME = "";
+
+std::string KEY_ID_TOUCHPAD_SECOND_UP_NAME = "";
+std::string KEY_ID_TOUCHPAD_SECOND_DOWN_NAME = "";
+std::string KEY_ID_TOUCHPAD_SECOND_LEFT_NAME = "";
+std::string KEY_ID_TOUCHPAD_SECOND_RIGHT_NAME = "";
 
 int KeyNameToKeyCode(std::string KeyName) {
 	std::transform(KeyName.begin(), KeyName.end(), KeyName.begin(), ::toupper);
@@ -184,7 +220,8 @@ int KeyNameToKeyCode(std::string KeyName) {
 	else if (KeyName == "PAGE-UP") return VK_NEXT;
 	else if (KeyName == "DELETE") return VK_DELETE;
 	else if (KeyName == "END") return VK_END;
-	else if (KeyName == "PAGE-DOWN") return VK_PRIOR;
+	else if (KeyName == "PAGE-UP") return VK_PRIOR;
+	else if (KeyName == "PAGE-DOWN") return VK_NEXT;
 
 	else if (KeyName == "UP") return VK_UP;
 	else if (KeyName == "DOWN") return VK_DOWN;
@@ -263,19 +300,125 @@ int KEY_ID_TOUCHPAD;
 int KEY_ID_OPTIONS;
 int KEY_ID_PS;
 
-int KEY_ID_SHAKING;
-int KEY_ID_MOTION_UP;
-int KEY_ID_MOTION_DOWN;
-int KEY_ID_MOTION_LEFT;
-int KEY_ID_MOTION_RIGHT;
+int KEY_ID_MOTION_SHAKING;
+int KEY_ID_MOTION_X_ADD;
+int KEY_ID_MOTION_X_SUB;
+int KEY_ID_MOTION_Y_ADD;
+int KEY_ID_MOTION_Y_SUB;
+int KEY_ID_MOTION_Z_ADD;
+int KEY_ID_MOTION_Z_SUB;
 
 int KEY_ID_TOUCHPAD_SWIPE_UP;
 int KEY_ID_TOUCHPAD_SWIPE_DOWN;
 int KEY_ID_TOUCHPAD_SWIPE_LEFT;
 int KEY_ID_TOUCHPAD_SWIPE_RIGHT;
 
-int KEY_ID_TOUCHPAD_UP;
-int KEY_ID_TOUCHPAD_DOWN;
-int KEY_ID_TOUCHPAD_LEFT;
-int KEY_ID_TOUCHPAD_RIGHT;
-int KEY_ID_TOUCHPAD_CENTER;
+int KEY_ID_TOUCHPAD_FIRST_UP;
+int KEY_ID_TOUCHPAD_FIRST_DOWN;
+int KEY_ID_TOUCHPAD_FIRST_LEFT;
+int KEY_ID_TOUCHPAD_FIRST_RIGHT;
+
+int KEY_ID_TOUCHPAD_SECOND_UP;
+int KEY_ID_TOUCHPAD_SECOND_DOWN;
+int KEY_ID_TOUCHPAD_SECOND_LEFT;
+int KEY_ID_TOUCHPAD_SECOND_RIGHT;
+
+bool IsKeyPressed(int KeyCode) {
+	return (GetAsyncKeyState(KeyCode) & 0x8000) != 0;
+}
+
+#define TOUCH_LEFT_MODE_MAX 2
+uint16_t TouchLeftMode(int Mode) {
+	switch (Mode) {
+	case 1:
+		return 960;
+		break;
+	case 2:
+		return 1719;
+		break;
+	default: //0
+		return 200;
+	}
+}
+
+#define TOUCH_TOP_MODE_MAX 2
+uint16_t TouchTopMode(int Mode) {
+	switch (Mode) {
+	case 1:
+		return 471;
+		break;
+	case 2:
+		return 785;
+		break;
+	default: //0
+		return 157;
+	}
+}
+
+struct _TouchData {
+	/*struct _TouchSticks
+	{
+		float LeftX = 0;
+		float LeftY = 0;
+		float RightX = 0;
+		float RightY = 0;
+	};
+	_TouchSticks TouchSticks;*/
+	uint16_t X = 0;
+	uint16_t Y = 0;
+
+	int LeftMode = 0;
+	int SkipPollLeft = 0;
+	int TopMode = 1;
+	int SkipPollTop = 0;
+
+	bool IsChanged = false;
+	bool PrevTouched = false;
+	uint8_t ID = 0;
+};
+_TouchData Touch1;
+_TouchData Touch2;
+
+void ResetTouchData(_TouchData &TouchData) {
+	TouchData.X = 0;
+	TouchData.Y = 0;
+}
+
+void WindowToCenter() {
+	HWND hWndConsole = GetConsoleWindow();
+	//if (hWndConsole == NULL) return 1;
+
+	RECT desktop;
+	const HWND hDesktop = GetDesktopWindow();
+	GetWindowRect(hDesktop, &desktop);
+	int screenWidth = desktop.right;
+	int screenHeight = desktop.bottom;
+
+	RECT consoleRect;
+	GetWindowRect(hWndConsole, &consoleRect);
+	int consoleWidth = consoleRect.right - consoleRect.left;
+	int consoleHeight = consoleRect.bottom - consoleRect.top;
+
+	MoveWindow(hWndConsole, (screenWidth - consoleWidth) / 2, (screenHeight - consoleHeight) / 2, consoleWidth, consoleHeight, TRUE);
+}
+
+double StickDeviationPercent(uint8_t lx, uint8_t ly) {
+	const double center = 128.0;
+
+	double dx = abs((double)lx - center);
+	double dy = abs((double)ly - center);
+
+	// максимальное смещение по оси
+	const double maxAxis = 128.0;
+
+	// нормализация по оси и суммарное отклонение
+	double percentX = dx / maxAxis;
+	double percentY = dy / maxAxis;
+
+	// берём длину вектора в нормализованных координатах
+	double percent = sqrt(percentX*percentX + percentY * percentY);
+
+	if (percent > 1.0) percent = 1.0;
+	return percent;
+}
+
