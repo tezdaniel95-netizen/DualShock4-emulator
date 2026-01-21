@@ -1,53 +1,19 @@
-name: Build Windows Auto-Detect
+name: Debug Arquivos
 
-on:
-  push:
-    branches: [ "master", "main" ]
-  workflow_dispatch:
+on: [push, workflow_dispatch]
 
 jobs:
-  build:
+  debug:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout do código
+    - name: Checkout
       uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Configurar MSBuild
-      uses: microsoft/setup-msbuild@v2
-
-    - name: Listar arquivos (Para Debug)
-      run: Get-ChildItem -Recurse
-      
-    - name: Compilar Automaticamente
+    - name: MOSTRAR ARQUIVOS (Debug)
       run: |
-        # Procura qualquer arquivo .sln dentro do repositório (recursivo)
-        $solution = Get-ChildItem -Path . -Filter *.sln -Recurse | Select-Object -First 1
+        Write-Host "--- LISTA DE TODOS OS ARQUIVOS NO REPOSITORIO ---"
+        Get-ChildItem -Recurse | Select-Object FullName
+        Write-Host "--- FIM DA LISTA ---"
         
-        if ($solution) {
-            Write-Host "Solução encontrada: $($solution.FullName)"
-            
-            # Tenta restaurar NuGet (se houver packages.config), mas não falha se não houver
-            nuget restore "$($solution.FullName)" -ErrorAction SilentlyContinue
-            
-            # Compila a solução encontrada
-            msbuild "$($solution.FullName)" /p:Configuration=Release /p:Platform=x64
-        }
-        else {
-            Write-Error "Nenhum arquivo .sln encontrado no repositório!"
-            exit 1
-        }
-
-    - name: Upload do Executável
-      uses: actions/upload-artifact@v4
-      with:
-        name: Build-Result
-        path: |
-          **/*.exe
-          **/*.dll
-          !**/obj/**
-          **/*.dll
-          !**/obj/**
-          
