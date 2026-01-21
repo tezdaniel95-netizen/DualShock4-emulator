@@ -1,4 +1,4 @@
-name: Build Windows Reparador
+name: Build Windows Blindado
 
 on:
   push:
@@ -18,38 +18,40 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Baixar Dependências Faltando (ViGEm)
+    - name: Instalar Dependências (Via Git)
       shell: powershell
       run: |
-        Write-Host "Baixando arquivos do ViGEm que faltam..."
+        Write-Host "Clonando biblioteca ViGEm..."
         
-        # Cria a pasta 'ViGEm' dentro de 'Source'
+        # 1. Clona o repositório oficial para uma pasta temporária
+        git clone https://github.com/nefarius/ViGEmClient.git temp_vigem
+        
+        # 2. Cria a pasta onde seu projeto espera encontrar os arquivos
         New-Item -ItemType Directory -Force -Path "Source\ViGEm"
         
-        # Baixa os cabeçalhos (.h) necessários
-        $baseUrl = "https://raw.githubusercontent.com/nefarius/ViGEmClient/master/include/ViGEm"
-        Invoke-WebRequest "$baseUrl/Client.h" -OutFile "Source\ViGEm\Client.h"
-        Invoke-WebRequest "$baseUrl/Common.h" -OutFile "Source\ViGEm\Common.h"
-        Invoke-WebRequest "$baseUrl/Util.h" -OutFile "Source\ViGEm\Util.h"
+        # 3. Move os arquivos de cabeçalho (.h)
+        Copy-Item -Path "temp_vigem\include\ViGEm\*.h" -Destination "Source\ViGEm\"
         
-        # Baixa a biblioteca compilada (.lib) para a pasta Source
-        # (Colocamos em dois lugares para garantir que o Linker ache)
-        $libUrl = "https://github.com/nefarius/ViGEmClient/raw/master/lib/x64/ViGEmClient.lib"
-        Invoke-WebRequest $libUrl -OutFile "Source\ViGEmClient.lib"
-        Invoke-WebRequest $libUrl -OutFile "Source\ViGEm\ViGEmClient.lib"
-
-        Write-Host "Arquivos baixados com sucesso!"
+        # 4. Move a biblioteca compilada (.lib) para a pasta Source
+        # (Colocamos na raiz do Source e dentro da pasta ViGEm para garantir)
+        if (Test-Path "temp_vigem\lib\x64\ViGEmClient.lib") {
+            Copy-Item -Path "temp_vigem\lib\x64\ViGEmClient.lib" -Destination "Source\"
+            Copy-Item -Path "temp_vigem\lib\x64\ViGEmClient.lib" -Destination "Source\ViGEm\"
+            Write-Host "Bibliotecas copiadas com sucesso!"
+        } else {
+            Write-Error "ERRO: Não encontrei o arquivo .lib no repositório clonado."
+            exit 1
+        }
 
     - name: Compilar
-      # Mantemos as correções de versão que fizemos antes
+      # Força o uso do VS2022 e Windows 10 SDK para evitar erros de versão antiga
       run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: Emulator-Build-Final
+        name: Emulador-Pronto
         path: |
           **/*.exe
           **/*.dll
           !**/obj/**
-          
