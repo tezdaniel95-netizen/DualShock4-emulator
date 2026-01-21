@@ -1,4 +1,4 @@
-name: Build Windows Corrigido
+name: Build Windows Reparador
 
 on:
   push:
@@ -18,9 +18,30 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Compilar (Forçando Versão Nova)
-      # Adicionamos /p:WindowsTargetPlatformVersion=10.0 e /p:PlatformToolset=v143
-      # Isso obriga o projeto a usar o Windows SDK e o compilador atuais do GitHub
+    - name: Baixar Dependências Faltando (ViGEm)
+      shell: powershell
+      run: |
+        Write-Host "Baixando arquivos do ViGEm que faltam..."
+        
+        # Cria a pasta 'ViGEm' dentro de 'Source'
+        New-Item -ItemType Directory -Force -Path "Source\ViGEm"
+        
+        # Baixa os cabeçalhos (.h) necessários
+        $baseUrl = "https://raw.githubusercontent.com/nefarius/ViGEmClient/master/include/ViGEm"
+        Invoke-WebRequest "$baseUrl/Client.h" -OutFile "Source\ViGEm\Client.h"
+        Invoke-WebRequest "$baseUrl/Common.h" -OutFile "Source\ViGEm\Common.h"
+        Invoke-WebRequest "$baseUrl/Util.h" -OutFile "Source\ViGEm\Util.h"
+        
+        # Baixa a biblioteca compilada (.lib) para a pasta Source
+        # (Colocamos em dois lugares para garantir que o Linker ache)
+        $libUrl = "https://github.com/nefarius/ViGEmClient/raw/master/lib/x64/ViGEmClient.lib"
+        Invoke-WebRequest $libUrl -OutFile "Source\ViGEmClient.lib"
+        Invoke-WebRequest $libUrl -OutFile "Source\ViGEm\ViGEmClient.lib"
+
+        Write-Host "Arquivos baixados com sucesso!"
+
+    - name: Compilar
+      # Mantemos as correções de versão que fizemos antes
       run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
@@ -31,3 +52,4 @@ jobs:
           **/*.exe
           **/*.dll
           !**/obj/**
+          
