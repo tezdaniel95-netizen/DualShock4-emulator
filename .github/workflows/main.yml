@@ -1,4 +1,4 @@
-name: Build Windows Final
+name: Build Windows Corrigido
 
 on:
   push:
@@ -18,14 +18,15 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Compilar Projeto (Release x64)
-      # Aqui está a correção: apontamos direto para o arquivo .vcxproj na pasta Source
-      run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64
+    - name: Compilar (Forçando Versão Nova)
+      # Adicionamos /p:WindowsTargetPlatformVersion=10.0 e /p:PlatformToolset=v143
+      # Isso obriga o projeto a usar o Windows SDK e o compilador atuais do GitHub
+      run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: DualShock4-Emulator-Baixar
+        name: Emulator-Build-Final
         path: |
           **/*.exe
           **/*.dll
