@@ -1,4 +1,4 @@
-name: Build Windows NuGet
+name: Build Windows Manual
 
 on:
   push:
@@ -18,42 +18,52 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Baixar Dependências (Via NuGet)
+    - name: Instalar ViGEm (Método ZIP Direto)
       shell: powershell
       run: |
-        Write-Host "Configurando segurança TLS 1.2..."
+        Write-Host "Configurando TLS 1.2..."
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
-        Write-Host "Baixando pacote oficial ViGEm.Client..."
-        # Baixa o pacote oficial direto do repositório NuGet
-        nuget install ViGEm.Client -Version 1.16.150 -OutputDirectory deps
+        # 1. Baixa o arquivo do pacote direto da fonte (Global CDN)
+        # Isso evita erros de 'pacote não encontrado' no feed
+        $url = "https://globalcdn.nuget.org/packages/vigem.client.1.16.150.nupkg"
+        Write-Host "Baixando arquivo bruto de: $url"
+        Invoke-WebRequest $url -OutFile "vigem_pacote.zip"
         
-        # Cria a pasta de destino
+        # 2. Descompacta o arquivo (arquivos .nupkg são apenas ZIPs renomeados)
+        Write-Host "Descompactando..."
+        Expand-Archive -Path "vigem_pacote.zip" -DestinationPath "temp_vigem" -Force
+        
+        # 3. Cria a estrutura de pastas que o seu projeto exige
         New-Item -ItemType Directory -Force -Path "Source\ViGEm"
         
-        Write-Host "Copiando arquivos..."
-        # O caminho dentro do pacote NuGet é padronizado, então não tem erro
-        $packagePath = "deps\ViGEm.Client.1.16.150"
+        # 4. Copia os arquivos de cabeçalho (.h) de dentro do pacote extraído
+        Write-Host "Copiando Headers..."
+        Copy-Item -Path "temp_vigem\build\native\include\ViGEm\*" -Destination "Source\ViGEm\" -Recurse
         
-        # Copia os headers (.h)
-        Copy-Item -Path "$packagePath\build\native\include\ViGEm\*" -Destination "Source\ViGEm\" -Recurse
+        # 5. Copia a biblioteca compilada (.lib)
+        Write-Host "Copiando Lib..."
+        $libSource = "temp_vigem\lib\native\x64\Release\ViGEmClient.lib"
         
-        # Copia a biblioteca (.lib) para a raiz do Source (onde o Linker procura)
-        Copy-Item -Path "$packagePath\lib\native\x64\Release\ViGEmClient.lib" -Destination "Source\"
-        
-        # Copia também para dentro da pasta ViGEm (por garantia)
-        Copy-Item -Path "$packagePath\lib\native\x64\Release\ViGEmClient.lib" -Destination "Source\ViGEm\"
-        
-        Write-Host "Tudo pronto para compilar!"
+        if (Test-Path $libSource) {
+            # Copia para a raiz do Source (onde o Linker geralmente procura)
+            Copy-Item -Path $libSource -Destination "Source\"
+            # Copia também para dentro da pasta ViGEm (por segurança)
+            Copy-Item -Path $libSource -Destination "Source\ViGEm\"
+            Write-Host "Dependências instaladas com sucesso!"
+        } else {
+            Write-Error "ERRO FATAL: Não encontrei o arquivo .lib dentro do pacote baixado."
+            exit 1
+        }
 
     - name: Compilar
-      # Mantemos as flags de compatibilidade do Windows
+      # Mantemos as configurações de versão para evitar erros de SDK
       run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: Emulador-Pronto-Para-Uso
+        name: Emulador-Pronto-Final
         path: |
           **/*.exe
           **/*.dll
