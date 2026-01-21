@@ -1,4 +1,4 @@
-name: Build Windows Blindado
+name: Build Windows NuGet
 
 on:
   push:
@@ -18,39 +18,42 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Instalar Dependências (Via Git)
+    - name: Baixar Dependências (Via NuGet)
       shell: powershell
       run: |
-        Write-Host "Clonando biblioteca ViGEm..."
+        Write-Host "Configurando segurança TLS 1.2..."
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
-        # 1. Clona o repositório oficial para uma pasta temporária
-        git clone https://github.com/nefarius/ViGEmClient.git temp_vigem
+        Write-Host "Baixando pacote oficial ViGEm.Client..."
+        # Baixa o pacote oficial direto do repositório NuGet
+        nuget install ViGEm.Client -Version 1.16.150 -OutputDirectory deps
         
-        # 2. Cria a pasta onde seu projeto espera encontrar os arquivos
+        # Cria a pasta de destino
         New-Item -ItemType Directory -Force -Path "Source\ViGEm"
         
-        # 3. Move os arquivos de cabeçalho (.h)
-        Copy-Item -Path "temp_vigem\include\ViGEm\*.h" -Destination "Source\ViGEm\"
+        Write-Host "Copiando arquivos..."
+        # O caminho dentro do pacote NuGet é padronizado, então não tem erro
+        $packagePath = "deps\ViGEm.Client.1.16.150"
         
-        # 4. Move a biblioteca compilada (.lib) para a pasta Source
-        # (Colocamos na raiz do Source e dentro da pasta ViGEm para garantir)
-        if (Test-Path "temp_vigem\lib\x64\ViGEmClient.lib") {
-            Copy-Item -Path "temp_vigem\lib\x64\ViGEmClient.lib" -Destination "Source\"
-            Copy-Item -Path "temp_vigem\lib\x64\ViGEmClient.lib" -Destination "Source\ViGEm\"
-            Write-Host "Bibliotecas copiadas com sucesso!"
-        } else {
-            Write-Error "ERRO: Não encontrei o arquivo .lib no repositório clonado."
-            exit 1
-        }
+        # Copia os headers (.h)
+        Copy-Item -Path "$packagePath\build\native\include\ViGEm\*" -Destination "Source\ViGEm\" -Recurse
+        
+        # Copia a biblioteca (.lib) para a raiz do Source (onde o Linker procura)
+        Copy-Item -Path "$packagePath\lib\native\x64\Release\ViGEmClient.lib" -Destination "Source\"
+        
+        # Copia também para dentro da pasta ViGEm (por garantia)
+        Copy-Item -Path "$packagePath\lib\native\x64\Release\ViGEmClient.lib" -Destination "Source\ViGEm\"
+        
+        Write-Host "Tudo pronto para compilar!"
 
     - name: Compilar
-      # Força o uso do VS2022 e Windows 10 SDK para evitar erros de versão antiga
+      # Mantemos as flags de compatibilidade do Windows
       run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: Emulador-Pronto
+        name: Emulador-Pronto-Para-Uso
         path: |
           **/*.exe
           **/*.dll
