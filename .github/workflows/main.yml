@@ -1,4 +1,4 @@
-name: Build Windows Manual
+name: Build Windows Finalíssimo
 
 on:
   push:
@@ -18,54 +18,53 @@ jobs:
     - name: Configurar MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    - name: Instalar ViGEm (Método ZIP Direto)
+    - name: Baixar Dependências (NuGet Forçado)
       shell: powershell
       run: |
-        Write-Host "Configurando TLS 1.2..."
+        Write-Host "Configurando segurança..."
         [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
-        # 1. Baixa o arquivo do pacote direto da fonte (Global CDN)
-        # Isso evita erros de 'pacote não encontrado' no feed
-        $url = "https://globalcdn.nuget.org/packages/vigem.client.1.16.150.nupkg"
-        Write-Host "Baixando arquivo bruto de: $url"
-        Invoke-WebRequest $url -OutFile "vigem_pacote.zip"
+        # Cria diretório temporário
+        New-Item -ItemType Directory -Force -Path "deps"
         
-        # 2. Descompacta o arquivo (arquivos .nupkg são apenas ZIPs renomeados)
-        Write-Host "Descompactando..."
-        Expand-Archive -Path "vigem_pacote.zip" -DestinationPath "temp_vigem" -Force
+        # Instala o pacote especificando a FONTE (-Source) para não falhar
+        # Usamos -DirectDownload e -NoCache para garantir que ele baixe fresco
+        Write-Host "Baixando ViGEm.Client..."
+        nuget install ViGEm.Client -Version 1.16.150 -Source "https://api.nuget.org/v3/index.json" -OutputDirectory deps -DirectDownload -NoCache
         
-        # 3. Cria a estrutura de pastas que o seu projeto exige
+        # Prepara as pastas do projeto
         New-Item -ItemType Directory -Force -Path "Source\ViGEm"
         
-        # 4. Copia os arquivos de cabeçalho (.h) de dentro do pacote extraído
+        # Caminho onde o nuget salvou (pode variar ligeiramente, então pegamos o primeiro que aparecer)
+        $packagePath = Get-ChildItem -Path "deps" -Filter "ViGEm.Client*" | Select-Object -First 1
+        Write-Host "Pacote encontrado em: $($packagePath.FullName)"
+        
+        # Copia Headers (.h)
         Write-Host "Copiando Headers..."
-        Copy-Item -Path "temp_vigem\build\native\include\ViGEm\*" -Destination "Source\ViGEm\" -Recurse
+        Copy-Item -Path "$($packagePath.FullName)\build\native\include\ViGEm\*" -Destination "Source\ViGEm\" -Recurse
         
-        # 5. Copia a biblioteca compilada (.lib)
-        Write-Host "Copiando Lib..."
-        $libSource = "temp_vigem\lib\native\x64\Release\ViGEmClient.lib"
+        # Copia Library (.lib)
+        Write-Host "Copiando Library..."
+        $libPath = "$($packagePath.FullName)\lib\native\x64\Release\ViGEmClient.lib"
         
-        if (Test-Path $libSource) {
-            # Copia para a raiz do Source (onde o Linker geralmente procura)
-            Copy-Item -Path $libSource -Destination "Source\"
-            # Copia também para dentro da pasta ViGEm (por segurança)
-            Copy-Item -Path $libSource -Destination "Source\ViGEm\"
-            Write-Host "Dependências instaladas com sucesso!"
+        if (Test-Path $libPath) {
+            Copy-Item -Path $libPath -Destination "Source\"
+            Copy-Item -Path $libPath -Destination "Source\ViGEm\" # Cópia de segurança
+            Write-Host "Arquivos organizados com sucesso!"
         } else {
-            Write-Error "ERRO FATAL: Não encontrei o arquivo .lib dentro do pacote baixado."
+            Write-Error "ERRO CRÍTICO: O arquivo .lib não estava onde esperávamos dentro do pacote."
             exit 1
         }
 
     - name: Compilar
-      # Mantemos as configurações de versão para evitar erros de SDK
+      # Mantendo as correções de versão do Windows SDK e PlatformToolset
       run: msbuild Source/DS4Emulator.vcxproj /p:Configuration=Release /p:Platform=x64 /p:WindowsTargetPlatformVersion=10.0 /p:PlatformToolset=v143
 
     - name: Upload do Executável
       uses: actions/upload-artifact@v4
       with:
-        name: Emulador-Pronto-Final
+        name: Emulador-Funcional
         path: |
           **/*.exe
           **/*.dll
           !**/obj/**
-          
